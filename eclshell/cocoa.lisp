@@ -4,7 +4,8 @@
 (defpackage :cocoa
   (:use :cl :ffi :util :eclffi)
   (:export
-   :show-alert))
+   :show-alert
+   :dismiss-alert))
 
 (in-package :cocoa)
 
@@ -23,11 +24,35 @@
               ((make-NSString message) :pointer-void)
               ((make-NSString dismiss-label) :pointer-void))
       :void
-    "{UIAlertView *alert = [[UIAlertView alloc] 
-      initWithTitle: #0
-      message: #1
-      delegate: nil
-      cancelButtonTitle: #2
-      otherButtonTitles: nil];
-     [alert show];
-     [alert release];}"))
+    "UIAlertView *alert = [[UIAlertView alloc] 
+        initWithTitle: #0
+        message: #1
+        delegate: nil
+        cancelButtonTitle: #2
+        otherButtonTitles: nil];
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [alert show];
+        [alert release];
+       });"))
+
+(defun dismiss-alert (&key animated)
+  (declare (ignore animated))
+  (plusp
+    (c-fficall ()
+      :int
+      "int count = 0;
+       for (UIWindow* window in [UIApplication sharedApplication].windows) {
+         NSArray* subviews = window.subviews;
+         if ([subviews count] > 0) {
+           UIView* view = [subviews objectAtIndex:0];
+           if ([view isKindOfClass:[UIAlertView class]]) {
+             dispatch_async(dispatch_get_main_queue(), ^{
+               UIAlertView* alert = (UIAlertView *)view;
+               [alert dismissWithClickedButtonIndex:[alert cancelButtonIndex] 
+                      animated:NO];
+             });
+             count++;
+            }
+          }
+        } 
+        @(return) = count;")))
