@@ -107,6 +107,16 @@ Current time:~25t" (/ internal-time-units-per-second) *gensym-counter*)
             (aref ip-vec 2)
             (aref ip-vec 3))))
 
+(defparameter *initial-alert* NIL)
+
+(swank::add-hook swank::*new-connection-hook* 'dismiss-initial-alert)
+
+(defun dismiss-initial-alert (connection)
+  (declare (ignore connection))
+  (when *initial-alert* 
+   (cocoa:dismiss-alert)
+   (setf *initial-alert* NIL)))
+
 (mp:process-run-function
  "SLIME-listener"
  (lambda (&aux (swank-port 4005))
@@ -115,6 +125,7 @@ Current time:~25t" (/ internal-time-units-per-second) *gensym-counter*)
               (set-text *label*
                         (format nil "slime: ~a:~a~%"
                                 address port))
+              (setf *initial-alert* T)
               (cocoa:show-alert
                "Swank Ready" 
                :message (format nil "Connect to ~a:~a from MCLIDE or SLIME."
