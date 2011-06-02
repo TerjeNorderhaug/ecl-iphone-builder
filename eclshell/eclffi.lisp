@@ -21,7 +21,6 @@
    :set-enabled
    :set-font
    :set-frame
-   :set-frame
    :set-image
    :set-number-of-lines
    :set-text
@@ -140,14 +139,20 @@
     "[#0 setText: [NSString stringWithCString: #1]];"))
 
 (defun set-frame (view frame)
-  (bind (((x y width height) frame))
-    (c-fficall ((view :pointer-void)
-                (x :float)
-                (y :float)
-                (width :float)
-                (height :float))
-        :void
-      "[((id) #0) setFrame: CGRectMake(#1,#2,#3,#4)];")))
+  (etypecase frame
+   (cons
+    (bind (((x y width height) frame))
+          (c-fficall ((view :pointer-void)
+                      (x :float)
+                      (y :float)
+                      (width :float)
+                      (height :float))
+                     :void
+                     "[((id) #0) setFrame: CGRectMake(#1,#2,#3,#4)];")))
+   (null
+    (c-fficall ((view :pointer-void))
+               :void
+               "[((id) #0) setFrame: CGRectZero];"))))
 
 (defun set-bounds (view frame)
   (bind (((x y width height) frame))
