@@ -11,6 +11,7 @@
    :make-button
    :make-label
    :make-NSString
+   :make-view-instance
    :ns-log
    :redraw
    :release
