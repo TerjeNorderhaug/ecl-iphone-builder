@@ -177,13 +177,20 @@
   (when alpha (set-alpha view alpha))
   view)
 
+(defmacro alloc-view-instance (view-class)
+  (if *compile-file-pathname* 
+    `(c-fficall ()
+                :pointer-void
+                ,(format nil "[[~a alloc] initWithFrame: CGRectZero]" view-class)
+                :one-liner t)
+    `(let ((view-ptr (alloc ,view-class :init T)))
+       (set-frame view-ptr NIL)
+       view-ptr)))
+
 (defmacro make-view-instance (view-class init-view-args)
-  `(let ((view (apply 'init-view
-                      (c-fficall ()
-                          :pointer-void
-                        ,(format nil "[[~a alloc] initWithFrame: CGRectZero]" view-class)
-                        :one-liner t)
-                      ,init-view-args)))
+ `(let ((view (apply 'init-view
+                     (alloc-view-instance ,view-class)
+                     ,init-view-args)))
      (ext:set-finalizer view #'release)
      view))
 
