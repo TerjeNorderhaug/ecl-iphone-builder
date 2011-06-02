@@ -4,6 +4,8 @@
    :add-subview
    :alloc
    :color-argb
+   :dispatch-async
+   :dispatch-sync
    :key-window
    :load-font
    :make-button
@@ -275,3 +277,24 @@
     (set-text-color view (or text-color (color-argb 1 0 0 0)))
     (when number-of-lines (set-number-of-lines view number-of-lines))
     view))
+
+(defun dispatch-async (process thunk)
+  "Enqueue closure for evaluation in the process"
+  (ecase process
+   (:main
+    (c-fficall (((make-callback-function thunk) :object))
+               :void
+     "dispatch_async(dispatch_get_main_queue(), ^{
+          cl_funcall(1, #0);
+      });"))))
+
+(defun dispatch-sync (process thunk)
+  "Enqueue closure for evaluation in the process"
+  (ecase process
+   (:main
+    (c-fficall (((make-callback-function thunk) :object))
+               :void
+     "dispatch_sync(dispatch_get_main_queue(), ^{
+          cl_funcall(1, #0);
+      });"))))
+
