@@ -152,7 +152,12 @@
    (null
     (c-fficall ((view :pointer-void))
                :void
-               "[((id) #0) setFrame: CGRectZero];"))))
+               "[((id) #0) setFrame: CGRectZero];"))
+   ((eql T)
+    (c-fficall ((view :pointer-void))
+               :void
+       "[[[UIApplication sharedApplication] keyWindow] frame];"))))
+
 
 (defun set-bounds (view frame)
   (bind (((x y width height) frame))
