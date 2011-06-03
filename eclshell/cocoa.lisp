@@ -56,3 +56,31 @@
           }
         } 
         @(return) = count;")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; WEB VIEW
+
+(defclass web-view ()
+  ((ptr :initarg :ptr :reader view-ptr)))
+
+(defun make-web-view (&rest init-view-args &key &allow-other-keys)
+  (let* ((ptr (make-view-instance "UIWebView" init-view-args))
+         (view (make-instance 'web-view :ptr ptr)))
+    (ext:set-finalizer ptr #'release)
+    view))
+
+(defmethod view-load-url ((view web-view) url)
+  (c-fficall (((make-NSString url) :pointer-void)
+              ((view-ptr view) :pointer-void))
+             :void
+     "NSURL *url = [NSURL URLWithString:#0]; 
+      NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
+      [#1 loadRequest:requestObj];"))
+
+(defmethod view-eval-js ((view web-view) script)
+ (ffi:convert-from-cstring
+  (c-fficall (((view-ptr view) :pointer-void)
+              ((make-NSString script) :pointer-void))
+             :cstring
+    "[[#0 stringByEvaluatingJavaScriptFromString:#1] UTF8String]"   
+    :one-liner t)))
