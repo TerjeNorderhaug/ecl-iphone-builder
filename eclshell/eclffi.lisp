@@ -188,7 +188,8 @@
   (when alpha (set-alpha view alpha))
   view)
 
-(defmacro alloc-view-instance (view-class)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+ (defmacro alloc-view-instance (view-class)
   (if *compile-file-pathname* 
     `(c-fficall ()
                 :pointer-void
@@ -197,13 +198,16 @@
     `(let ((view-ptr (alloc ,view-class :init T)))
        (set-frame view-ptr NIL)
        view-ptr)))
+ )
 
-(defmacro make-view-instance (view-class init-view-args)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+ (defmacro make-view-instance (view-class init-view-args)
  `(let ((view (apply 'init-view
                      (alloc-view-instance ,view-class)
                      ,init-view-args)))
      (ext:set-finalizer view #'release)
      view))
+)
 
 (def-ffi-enum uicontrol-state
     ((:normal "UIControlStateNormal")
