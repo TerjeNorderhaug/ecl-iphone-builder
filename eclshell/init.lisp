@@ -114,8 +114,9 @@ Current time:~25t" (/ internal-time-units-per-second) *gensym-counter*)
 (defun dismiss-initial-alert (connection)
   (declare (ignore connection))
   (when *initial-alert* 
-   (cocoa:dismiss-alert)
-   (setf *initial-alert* NIL)))
+    (with-autorelease-pool ()
+      (cocoa:dismiss-alert)
+      (setf *initial-alert* NIL))))
 
 (mp:process-run-function
  "SLIME-listener"
